@@ -12,6 +12,7 @@ EXTCOL_D020      = $D020
           ; SYS that tells the processor to execute the machine language subroutine at a specific address
           !byte $0C,$08,$0A,$00,$9E,$20,$32,$30,$36,$34,$00,$00,$00,$00,$00
           
+          sei     ; Disble CIA interrupt
           
           ; Here the game logic has to be done during the VBLANK interval 
 GameLoop  
