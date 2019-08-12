@@ -41,17 +41,22 @@ NMIRCA_FFFA     = $FFFA ; There is an address of NMI routine address, when KERNA
 
         cli
 
+; -----------------------------
+; Game loop
 GameLoop  
           
         jmp GameLoop          
 
+; -----------------------------
 ; NMI handler
 MyNMI
         rti
+
+; -----------------------------
 ; IRQ handler        
 MyIRQ
         dec EXTCOL_D020 ; Change the border color
 
-        lda $DC0D       ; Acknowledge CIA 1
+        lda CIAICR_DC0D ; Acknowledge CIA 1
         rti
  
