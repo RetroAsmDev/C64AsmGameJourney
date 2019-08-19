@@ -52,14 +52,16 @@ NMIRCA_FFFA     = $FFFA ; There is an address of NMI routine address, when KERNA
         lda #$35        ; Kernal out, BASIC out
         sta $01         ; Save ROM swap out
         
-        ; Set memory screen address to $0400 (default anyway:)
+        ; Set memory screen address to $2000 (upper nibble - %1000)
         lda VMCSB__D018
-        ora #%00010000
+        and #%00001111  ; Reset upper 4 bits (nibble) and preserve bottom nibble value
+        ora #%10000000  ; Set upper nibble
         sta VMCSB__D018
 
-        ; Set VIC-II bank to bank 0 - $0000 (default anyway:)
+        ; Set VIC-II bank to bank 2 - $8000-$BFFF (bit 0 and 1: 01)
         lda CI2PRA_DD00
-        ora #%00000011
+        and #%11111100
+        ora #%00000001
         sta CI2PRA_DD00
 
         cli
@@ -71,7 +73,7 @@ GameLoop
         ; Update the game state
 
         dec EXTCOL_D020 ; Change the border color
-        inc $0400       
+        inc $A000       ; Screen memory address: $2000 = bank 0, $A000 = bank 2       
 
         ; Start busy waiting for raster line 251
         jsr WaitFrame
