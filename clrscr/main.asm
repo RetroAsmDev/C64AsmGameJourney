@@ -50,10 +50,7 @@
 
         jsr clrscr2
         
-
-        ;jmp  *  
         
-
 
 ; ----------------------------------------------------------
 ; Game loop
@@ -63,7 +60,7 @@ GameLoop
 
         dec EXTCOL_D020 ; Change the border color
         ;lda #$20 
-        ;sta $A000       ; Screen memory address: $2000 = bank 0, $A000 = bank 2       
+        inc $0400         
         
 
         ; Start busy waiting for raster line 251

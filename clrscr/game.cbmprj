@@ -62,11 +62,7 @@
             <FileType>2</FileType>
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
-            <Breakpoints>
-                <Breakpoint>80</Breakpoint>
-                <BreakpointDetails>True;0;0;2;0;False;80;False;0</BreakpointDetails>
-                <Enabled>True</Enabled>
-            </Breakpoints>
+            <Breakpoints />
             <Bookmarks />
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
@@ -78,8 +74,8 @@
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>57,</Bookmarks>
-            <Topmost>False</Topmost>
+            <Bookmarks />
+            <Topmost>True</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>
     </SourceFiles>
