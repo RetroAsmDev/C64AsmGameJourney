@@ -32,22 +32,24 @@
         
         ; Swap out ROMs
         lda #$35        ; Kernal out, BASIC out
-        sta $01         ; Save ROM swap out
+        sta R6510_0001
         
-        ; Set memory screen address to $0400 (upper nibble - %0001)
+        ; Set memory screen address to $3400 (upper nibble - %1101)
+        ; and character memory to $3800 (bit 1-3 = 111)
         lda VMCSB__D018
-        and #%00001111  ; Reset upper 4 bits (nibble) and preserve bottom nibble value
-        ora #%00010000  ; Set upper nibble
+        and #%00000001  ; Reset upper 4 bits (nibble) and preserve bottom nibble value
+        ora #%11011110  ; Set upper nibble
         sta VMCSB__D018
 
-        ; Set VIC-II bank to bank 0 - $0000-$3FFF (bit 0 and 1: 11)
+        ; Set VIC-II bank to bank 3 - $C000-$FFFF (bit 0 and 1: 00)
         lda CI2PRA_DD00
         and #%11111100
-        ora #%00000011
+        ora #%00000000
         sta CI2PRA_DD00
 
         cli
 
+        jsr copy_rom_character_set        
         
         jsr clear_screen        ; Clear screen
         
@@ -112,6 +114,9 @@ str_hello_world
         byte 13,10
         text 'Hello World!'
         byte 0
+
+character_set
+        word $D800
 
 
 

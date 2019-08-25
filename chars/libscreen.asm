@@ -57,7 +57,7 @@ clear_screen_slow
 ; Uses: 
 ;  N/A
 ; Preserves: A, X, Y
-; Cycles: 8000-8400
+; Cycles: ?
 ;
 ; ====================================================================
 
@@ -70,11 +70,12 @@ clear_screen
         lda #$20
 
         ldx #$00                ; Reset X counter (0-255)
-        ldy #$03                ; Reset Y counter (1-4) = we need to fill 1024 characters
+        ldy #$04                ; Reset Y counter (1-4) = we need to fill 1024 characters
                                 ; which is 4*256
         
 @loop256
         sta SCREEN_MEMORY,X     ; Print 256 characters
+        ;txa
         inx 
         bne @loop256            ; Wait until it crosses $FF
 
@@ -92,7 +93,6 @@ clear_screen
         
         rts
 
-
 ; ====================================================================
 ;
 ; Print string at X,Y
@@ -100,7 +100,7 @@ clear_screen
 ;  X = LSB address
 ;  Y = MSB address
 ; Uses: 
-;  N/A
+;  ZP_TMP_00 - ZP_TMP_03
 ; Preserves: A, X, Y
 ; Cycles: 
 ;
@@ -115,10 +115,10 @@ print_string_at_xy
         stx ZP_TMP_00           ; Store address of the passed structure to ZP
         sty ZP_TMP_01
         
-        ldx #SCREEN_MEMORY_LSB  ; Store address of the screen memory to ZP
+        ldx #<SCREEN_MEMORY     ; Store address of the screen memory to ZP
         stx ZP_TMP_02           
 
-        ldx #SCREEN_MEMORY_MSB
+        ldx #>SCREEN_MEMORY
         stx ZP_TMP_03
 
 
@@ -192,3 +192,51 @@ print_string_at_xy
         
         rts
 
+
+; ====================================================================
+;
+; Copy 1024 characters from ROM ($D800) to RAM highest address ($F800)
+; Input: 
+;  N/A
+; Uses: 
+;  N/A
+; Preserves: A, X, Y
+; Cycles: 
+;
+; ====================================================================
+
+copy_rom_character_set
+
+        sei
+
+        lda R6510_0001          ; Swap in character ROM to $D800
+        sta ZP_TMP_00 
+        lda #$31                ; No BASIC, no KERNAL, character ROM 
+        sta R6510_0001
+
+        ldx #$04
+        ldy #$00
+        
+@copy256
+
+@@character_rom_instr
+        lda CHARACTER_ROM,Y
+
+@@character_ram_instr
+        sta CHARACTER_RAM,Y
+
+        iny
+        bne @copy256
+
+        inc @@character_rom_instr+2     ; Modify the address of the character
+        inc @@character_ram_instr+2     ; ROM and RAM MSB by 1 for every 256 characters
+        
+        dex
+        
+        bne @copy256
+
+        lda ZP_TMP_00          ; Resume memory state back
+        sta R6510_0001 
+        cli
+
+        rts

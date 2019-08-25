@@ -2,8 +2,8 @@
 ; Zero page
 ; $00-$FF
 ; ==============================================================================
-ZP_0         = $00      ; Reserved
-ZP_1         = $01      ; Reserved
+D6510_0000   = $00      ; Reserved
+R6510_0001   = $01      ; Reserved
 
 ZP_TMP_00    = $02      ; Temporary variables
 ZP_TMP_01    = $03     
@@ -19,14 +19,14 @@ ZP_TMP_08    = $A0
 ; Screen memory default location
 ; $0400-$0800
 ; ==============================================================================
-SCREEN_MEMORY = $0400  
-SCREEN_MEMORY_LSB = $00  
-SCREEN_MEMORY_MSB = $04  
+SCREEN_MEMORY   = $F400  
 
 ; ==============================================================================
 ; VIC-II SID, I/O, Color RAM or Character ROM
 ; $D000-$DFFF
 ; ==============================================================================
+
+CHARACTER_ROM   = $D000
 
 ;  VIC-II Registers
 RASTER_D012     = $D012 ; VIC-II Raster Control Register
@@ -39,8 +39,10 @@ CIANCR_DD0D     = $DD0D ; CIA 2 NMI Control Register
 CI2PRA_DD00     = $DD00 ; Data Port Register A
 
 
+CHARACTER_RAM   = $F800 ; Character RAM for bank 0 ($C000-$FFFF)
+
 ; ==============================================================================
-; Interrupt handlers addresses
+; Hardware vectors
 ; $FFFA-$FFFF
 ; ==============================================================================
 IRQRCA_FFFE     = $FFFE ; There is an address of IRQ address, when KERNAL is not used
