@@ -33,6 +33,8 @@ RASTER_D012     = $D012 ; VIC-II Raster Control Register
 VMCSB__D018     = $D018 ; VIC-II Memory control Register
 EXTCOL_D020     = $D020 ; VIC-II Border Color Register
 
+COLOR_RAM       = $D800 ; Address of 1000 bytes of color RAM
+
 ; CIA Registers
 CIAICR_DC0D     = $DC0D ; CIA 1 Interrupt Control Register
 CIANCR_DD0D     = $DD0D ; CIA 2 NMI Control Register

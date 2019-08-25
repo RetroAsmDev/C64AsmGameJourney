@@ -56,6 +56,15 @@
         ldx #<str_hello_world   ; Print "Hello World!"
         ldy #>str_hello_world
         jsr print_string_at_xy
+
+; ----------------------------------------------------------
+; Initilize sid to generate random number (https://www.atarimagazines.com/compute/issue72/random_numbers.php)
+
+        lda #$ff  ; maximum frequency value
+        sta $d40e ; voice 3 frequency low byte
+        sta $d40f ; voice 3 frequency high byte
+        lda #$80  ; noise waveform, gate bit off
+        sta $d412 ; voice 3 control register
         
         
 
@@ -66,6 +75,20 @@ game_loop
         ; Update the game state
 
         dec EXTCOL_D020 ; Change the border color
+
+        ; Change the "Hello world!" color
+
+        ldx #$00
+
+; ----------------------------------------------------------
+; Make 'Hello world' blink
+@color_loop
+        lda $d41b
+        sta COLOR_RAM + $19c,X  ; Color RAM start + offset of 'Hello World!'
+        inx                     ; index in the string
+        cpx #$0d                ; Length of 'Hello World!' 
+        bne @color_loop
+
         ;lda #$20 
         ;inc $0400         
         
