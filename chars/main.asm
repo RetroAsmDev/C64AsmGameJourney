@@ -84,9 +84,9 @@ game_loop
 ; Make 'Hello world' blink
 @color_loop
         lda $d41b
-        sta COLOR_RAM + $19c,X  ; Color RAM start + offset of 'Hello World!'
+        sta COLOR_RAM + $19d,X  ; Color RAM start + offset of 'Hello World!'
         inx                     ; index in the string
-        cpx #$0d                ; Length of 'Hello World!' 
+        cpx #$0c                ; Length of 'Hello World!' 
         bne @color_loop
 
         ;lda #$20 
