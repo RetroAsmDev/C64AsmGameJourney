@@ -64,12 +64,12 @@
                                         ; RAM has to be set to 1
         txa
         ora #%0001000
+        ;and #%1110111
         sta COLOR_RAM + $19d,X
 
         inx                             ; Index in the string
         cpx #$10                        ; Length of 'Hello World!' 
         bne @multi_color_loop
-
 
         lda SCROLX_D016                 ; Set multicolor mode on
         ora #%00010000
