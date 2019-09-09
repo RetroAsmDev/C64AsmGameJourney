@@ -204,8 +204,11 @@ print_string_at_xy
 ; Cycles: 
 ;
 ; ====================================================================
-
 copy_rom_character_set
+
+        sta @atemp+1            ; Preserve AXY
+        stx @xtemp+1
+        sty @ytemp+1
 
         sei
 
@@ -239,14 +242,16 @@ copy_rom_character_set
         sta R6510_0001 
         cli
 
+@atemp  lda #$00        ; Restore AXY 
+@xtemp  ldx #$00
+@ytemp  ldy #$00
+
         rts
-
-
 
 ; ====================================================================
 ;
-; Copy 1024 characters from own character set ($2800) to RAM to 
-; the highest possible address ($F800)
+; Copy 1024 characters from own character set from PRG location for its
+; final loction in RAM in bnk 3 on the highest possible address ($F800)
 ; Input: 
 ;  N/A
 ; Uses: 
@@ -258,27 +263,94 @@ copy_rom_character_set
 
 copy_own_character_set
 
+        sta @atemp+1            ; Preserve AXY
+        stx @xtemp+1
+        sty @ytemp+1
 
-        ldx #$04
-        ldy #$00
+
+        ldx #$04                ; Copy 4*256 bytes (1kB charset)
+        ldy #$00                ; Init 256 counter
         
 @copy256
 
-@@character_set_instr
-        lda CHARACTER_PRG,Y
+@@char_prg_instr
+        lda CHARACTER_PRG,Y     ; Load character from .prg location
 
-@@character_ram_instr
-        sta CHARACTER_RAM,Y
+@@char_ram_instr
+        sta CHARACTER_RAM,Y     ; Copy the chracatrer to the final bank 3 location
+                
+        iny
+        bne @copy256            ; Loop 256 characters
+
+                                ; If Y overflow 8-bit, it becomes 0
+                                ; Self-modify both MSBs
+
+        inc @@char_prg_instr+2  ; Modify the address of the character
+        inc @@char_ram_instr+2  ; ROM and RAM MSB by 1 for every 256 characters
+        
+        dex                     ; 4 -> 0
+        
+        bne @copy256            ; If we did not reach 1024 chars look
+
+@atemp  lda #$00                ; Restore AXY 
+@xtemp  ldx #$00
+@ytemp  ldy #$00
+
+        rts
+
+; ====================================================================
+;
+; Copy sprite from PRG location to the VIC bank 3
+; Input: 
+;  ZP_PAR_00 - ZP_PARAM_02: Sprite address from PRG
+;  ZP_PAR_02 - ZP_PARAM_04: Sprite target address in RAM
+;  ZP_PAR_04: Number of frames
+; Uses: 
+;  ZP_TMP_00
+; Preserves: A, X, Y
+; Cycles: 
+;
+; ====================================================================
+copy_sprite_from_prg_to_mem
+
+        sta @atemp+1            ; Preserve AXY
+        stx @xtemp+1
+        sty @ytemp+1
+        
+        ldy #$00                ; Y = single frame bytes counter (0-63)
+        
+        ldx #$04                ; ZP = frame counter (4 frames = 256 bytes...)
+        stx ZP_TMP_00           ; 
+
+@copy_frame        
+        lda (ZP_PAR_00,Y)       ; Load sprite byte from PRG address
+        sta (ZP_PAR_02,Y)       ; Save sprite byte to RAM ($E000)
 
         iny
-        bne @copy256
+        cpy #$40                ; Each frme is 64 bytes
+        bne @copy_frame         ; Was the whole frame copied?
+                                 
+        ldx ZP_TMP_00           ; Every 4 frames we need to increase the 
+        dex                     ; PRG and RAM MSB address since we overflow
+        stx ZP_TMP_00           ; LSB (4*64=256)
+        bne @check_next_frame
 
-        inc @@character_set_instr+2     ; Modify the address of the character
-        inc @@character_ram_instr+2     ; ROM and RAM MSB by 1 for every 256 characters
+        inc ZP_PAR_01           ; Inc PRG address by 256
+        inc ZP_PAR_03           ; Inc RAM addesss by 256
+
+        ldx #$04                ; Reset frame counter
+        stx ZP_TMP_00
         
+@check_next_frame
+        ldx ZP_PAR_04           ; Check if we copied all frames
         dex
-        
-        bne @copy256
+        stx ZP_PAR_04           ; Loop if there is still framw to copy
+        bne @copy_frame
+    
+
+@atemp  lda #$00                ; Restore AXY 
+@xtemp  ldx #$00
+@ytemp  ldy #$00
 
         rts
 
@@ -298,55 +370,6 @@ copy_own_character_set
 ;
 ; ====================================================================
 set_mc_string_color_at_xy
-
-        rts
-
-; ====================================================================
-;
-; Copy sprite from PRG location to the VIC bank 3
-; Input: 
-;  ZP_PAR_00 - ZP_PARAM_02: Sprite address from PRG
-;  ZP_PAR_02 - ZP_PARAM_04: Sprite target address in RAM
-;  ZP_PAR_04: Number of frames
-; Uses: 
-;  ZP_TMP_00
-; Preserves: A, X, Y
-; Cycles: 
-;
-; ====================================================================
-copy_sprite_from_prg_to_mem
-        
-        ldy #$00                ; Frame bytes counter (0-63)
-        
-        ldx #$04                ; Frame counter (4 frames = 256 bytes...)
-        stx ZP_TMP_00
-
-@copy_frame        
-        lda (ZP_PAR_00,Y)       ; Load sprite from PRG address
-        sta (ZP_PAR_02,Y)       ; Save to RAM ($E000)
-
-        iny
-        cpy #$40                ; Each sprite is 64 bytes
-        bne @copy_frame         ; Was the frame copied?
-                                 
-        ldx ZP_TMP_00           ; Every 4 frames we need to increase the 
-        dex                     ; PRG and RAM MSB address
-        stx ZP_TMP_00
-        bne @check_next_frame
-
-        inc ZP_PAR_01           ; Inc PRG address by 256
-        inc ZP_PAR_03           ; Inc RAM addesss by 256
-
-        ldx #$04                ; Reset frame counter
-        stx ZP_TMP_00
-        
-        
-@check_next_frame
-        ldx ZP_PAR_04           ; Check if we copied all frames
-        dex
-        stx ZP_PAR_04
-        bne @copy_frame
-    
 
         rts
 

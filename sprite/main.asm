@@ -60,8 +60,9 @@
         ldy #>str_hello_world
         jsr print_string_at_xy
 
-        lda #<SPRITE_PRG                ; Copy sprite into its final location
-        sta ZP_PAR_00
+; --------------------------------
+        lda #<SPRITE_PRG                ; Load and copy sprite 0 into its final location
+        sta ZP_PAR_00                   ; Sprite memory is in bank 3 at $E000
         lda #>SPRITE_PRG
         sta ZP_PAR_01
 
@@ -70,7 +71,7 @@
         lda #>SPRITE_RAM
         sta ZP_PAR_03
 
-        lda #$01
+        lda #$01                        ; One frame
         sta ZP_PAR_04
 
         jsr copy_sprite_from_prg_to_mem
