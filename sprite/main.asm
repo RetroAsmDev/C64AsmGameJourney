@@ -37,14 +37,14 @@
         ; Set memory screen address to $3400 (upper nibble - %1101)
         ; and character memory to $3800 (bit 1-3 = 111)
         lda VMCSB__D018
-        and #%00000001  ; Reset upper 4 bits (nibble) and preserve bottom nibble value
-        ora #%11011110  ; Set upper nibble
+        and #%00000001  
+        ora #%11011110  
         sta VMCSB__D018
 
         ; Set VIC-II bank to bank 3 - $C000-$FFFF (bit 0 and 1: 00)
         lda CI2PRA_DD00
         and #%11111100
-        ora #%00000000
+        ;ora #%00000000
         sta CI2PRA_DD00
 
         cli
@@ -61,6 +61,8 @@
         jsr print_string_at_xy
 
 ; --------------------------------
+; Step 1: Copy sprites to their final locationa
+
         lda #<SPRITE_PRG                ; Load and copy sprite 0 into its final location
         sta ZP_PAR_00                   ; Sprite memory is in bank 3 at $E000
         lda #>SPRITE_PRG
@@ -76,9 +78,52 @@
 
         jsr copy_sprite_from_prg_to_mem
 
+; Step 2: Set sprite position
+        lda #100                        ; Set position to X=100, Y=100
+        sta SP0X___D000
+
+        lda #229                        ; Y = 250 (bottom border) - 21(sprite height)
+        sta SP0Y___D001
+
+        lda #%11111110                  ; Delete the MSB bit of the sprite X position 
+        and MSIGX__D010
+
+; Step 3: Set MC mode
+        
+        lda SPMC___D01C                 ; Set sprite 0 to MC
+        ora #%00000001                  
+        sta SPMC___D01C
+
+; Step 4: Set sprite colors
+
+        lda #$03
+        sta SP0COL_D027
+
+        lda #$0B
+        sta SPMC0__D025
+
+        lda #$0E
+        sta SPMC1__D026
+
+; Step 5,6: Set sprite pointer in screen memory and enable it in $D015  
+        lda #$80                        ; Set sprite pointer:
+                                        ;   The $E000 offset in bank 3 is 8192,
+                                        ;   so the first address is 8192/64 = 128 ($80)
+        sta SPRITE_PTR_MEMORY
+
+        lda #%00000001                  ; Enable only sprite 0, rest keep disabled
+        sta SPENA__D015
+
+; --------------------------------
+        lda #$07                        ; Set border color
+        sta BGCOL0_D021
+        
+        lda #$0C                        ; Set background color
+        sta EXTCOL_D020 
+
 ; --------------------------------
         ldx #$00
-        lda #%0001111
+        lda #%0001000
 @multi_color_loop                       ; Bit 3 of every multicolor character in color
                                         ; RAM has to be set to 1
         
@@ -87,7 +132,7 @@
         sta COLOR_RAM + $19d,X
 
         inx                             ; Index in the string
-        cpx #11                         ; Length of "Gas Mutants"
+        cpx #$0B                        ; Length of "Gas Mutants"
         bne @multi_color_loop
 
         lda SCROLX_D016                 ; Set multicolor mode on

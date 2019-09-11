@@ -105,6 +105,7 @@ clear_screen
 ; Cycles: 
 ;
 ; ====================================================================
+
 print_string_at_xy
 
         sta @atemp+1            ; Preserve AXY
@@ -204,6 +205,7 @@ print_string_at_xy
 ; Cycles: 
 ;
 ; ====================================================================
+
 copy_rom_character_set
 
         sta @atemp+1            ; Preserve AXY
@@ -242,7 +244,7 @@ copy_rom_character_set
         sta R6510_0001 
         cli
 
-@atemp  lda #$00        ; Restore AXY 
+@atemp  lda #$00                ; Restore AXY 
 @xtemp  ldx #$00
 @ytemp  ldy #$00
 
@@ -311,6 +313,7 @@ copy_own_character_set
 ; Cycles: 
 ;
 ; ====================================================================
+
 copy_sprite_from_prg_to_mem
 
         sta @atemp+1            ; Preserve AXY
